@@ -295,6 +295,7 @@ class CaraRubik:
         ancho = int(ancho * dif) 
 
         return img.escalar(alto, ancho)
+
 class CuboRubik:
     '''
     Clase del cubo Rubik

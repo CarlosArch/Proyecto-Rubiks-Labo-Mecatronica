@@ -38,7 +38,7 @@ class Cubo:
                  heuristica: str = '_fuera_de_lugar'):
         self.caras = caras
         self.camino = camino
-        self.costo = costo
+        self.c = costo
         self.funcion_h = heuristica
 
     def rotar(self, cara: str, direccion: str):
@@ -48,7 +48,7 @@ class Cubo:
         hijo = copy.deepcopy(self)
         aph = "'" if direccion == 'izq' else ""
         hijo.camino += [f'{cara}{aph}']
-        hijo.costo += 1
+        hijo.c += 1
 
         # Esta es la cosa más horrible que he hecho en un buen rato.
         if cara == 'F':
@@ -146,10 +146,14 @@ class Cubo:
     @property
     def resuelto(self):
         # Si la heurística es 0, ya llegamos a la solución.
-        return (self.heuristica == 0)
+        return (self.h == 0)
 
     @property
-    def heuristica(self):
+    def f(self):
+        return (self.h + self.c)
+
+    @property
+    def h(self):
         '''
         Regresa la heurística definida al inicializar la clase.
         '''
@@ -188,53 +192,54 @@ def A_star(inicial: Cubo, frontera: list = [], explorados: list = [], costo_max:
     '''
     frontera = [inicial]
 
-    for nodo in frontera:
+    while frontera:
+        nodo = frontera.pop()
+        explorados += [nodo]
 
         # wait = input('Continuar')
         print('última acción:', nodo.camino[-1],
-            '\t', 'costo:', nodo.costo,
-            '\t', 'heuristica:', nodo.heuristica,
-            '\t', 'f-cost:', nodo.heuristica + nodo.costo)
+            '\t', 'costo:', nodo.c,
+            '\t', 'heuristica:', nodo.h,
+            '\t', 'f-cost:', nodo.f)
 
         if nodo.resuelto:
             return f'Solución: {nodo.camino}'
 
-        if nodo.costo >= costo_max:
-            mejor = explorados.sort(key=lambda x: x.heuristica, reverse=True)[-1]
-            return f'Ninguna solución encontrada. \n mejor: {mejor.camino}'
+        if nodo.c >= costo_max:
+            explorados.sort(key=lambda x: x.h, reverse=True)
+            mejor = explorados[-1]
+            return 'Ninguna solución encontrada.\n'\
+                   'mejor:'\
+                   f'    costo: {mejor.c}'\
+                   f'    heuristica: {mejor.h}'\
+                   f'    costo F: {mejor.f}\n'\
+                   f'camino: {mejor.camino}'\
 
-        explorados += [nodo]
 
         for accion in nodo.acciones:
             hijo = nodo.rotar(*accion)
 
-            costo_f = 0
-            costo_f += hijo.costo
-            costo_f += hijo.heuristica
-
             # Evitar loopear infinitamente.
-            nuevo = True
-            ultima_accion = nodo.camino[-1]
-            if ultima_accion[0] == accion[0]: # Si son 2 rotaciones de la misma cara
-                if not ultima_accion[-1] == accion[-1]: # Y en direcciones opuestas
-                    nuevo = False
-            if len(nodo.camino) >= 4:
-                if len(set(nodo.camino[-3:] + [accion])) <= 1: # Si las ultimas 4 son iguales
-                    nuevo = False
-            if nuevo:
-                frontera += [(hijo, costo_f)]
+            # nuevo = True
+            # ultima_accion = nodo.camino[-1]
+            # if ultima_accion[0] == accion[0]: # Si son 2 rotaciones de la misma cara
+            #     if not ultima_accion[-1] == accion[-1]: # Y en direcciones opuestas
+            #         nuevo = False
+            # if len(nodo.camino) >= 4:
+            #     if len(set(nodo.camino[-3:] + [accion])) <= 1: # Si las ultimas 4 son iguales
+            #         nuevo = False
+            # if nuevo:
+            #     frontera += [hijo]
 
             # Evitar loopear infinitamente (LENTO AS FUCC)
-            # if not hijo in explorados:
-            #     frontera += [(hijo, costo_f)]
+            if not hijo in explorados:
+                frontera += [hijo]
                 # print(f'Añadiendo:\t{hijo.camino}')
             # else:
             #     print(f'Ya explorado:\t{hijo.camino}')
 
         # Ordena por mejor a peor por costo_f
-        frontera.sort(key=lambda x: x[1], reverse=True)
- 
-        mejor = frontera.pop()[0]
+        frontera.sort(key=lambda x: x.f, reverse=True)
 
 def tests():
     resuelto = {
