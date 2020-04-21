@@ -9,45 +9,9 @@ from copy import deepcopy
 
 import numpy as np
 
-COLORS = ('W', 'Y', 'R', 'G', 'B', 'O')
-
-R = X = np.array([ 1, 0, 0]) # Right
-L     = np.array([-1, 0, 0]) # Left
-U = Y = np.array([ 0, 1, 0]) # Up
-D     = np.array([ 0,-1, 0]) # Down
-F = Z = np.array([ 0, 0, 1]) # Front
-B     = np.array([ 0, 0,-1]) # Back
-
-ROT_X_POS = np.array([ # On X axis, counter-clockwise.
-    [ 1, 0, 0],
-    [ 0, 0, 1],
-    [ 0,-1, 0],
-    ])
-ROT_X_NEG = np.array([ # On X axis, clockwise.
-    [ 1, 0, 0],
-    [ 0, 0,-1],
-    [ 0, 1, 0],
-    ])
-ROT_Y_POS = np.array([ # On Y axis, counter-clockwise.
-    [ 1, 0, 1],
-    [ 0, 1, 0],
-    [-1, 0, 0],
-    ])
-ROT_Y_NEG = np.array([ # On Y axis, clockwise.
-    [ 1, 0,-1],
-    [ 0, 1, 0],
-    [ 1, 0, 0],
-    ])
-ROT_Z_POS = np.array([ # On Z axis, counter-clockwise.
-    [ 0,-1, 0],
-    [ 1, 0, 0],
-    [ 0, 0, 1],
-    ])
-ROT_Z_NEG = np.array([ # On Z axis, clockwise.
-    [ 0, 1, 0],
-    [-1, 0, 0],
-    [ 0, 0, 1],
-    ])
+from constants import COLORS
+from constants import R, L, U, D, F, B, X, Y, Z
+from constants import ROT_X_POS, ROT_X_NEG, ROT_Y_POS, ROT_Y_NEG, ROT_Z_POS, ROT_Z_NEG
 
 class Cubie():
     """
@@ -129,9 +93,9 @@ class Cubie():
         return f'Cubie(type: {self.typ}, pos: {self.pos}, col: {self.col})'
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-        return np.array_equiv(self.pos, other.pos) and np.array_equiv(self.col, other.col)
+        return isinstance(other, self.__class__) \
+            and np.array_equiv(self.pos, other.pos) \
+            and np.array_equiv(self.col, other.col)
 
 class RubiksCube():
     """
@@ -242,6 +206,9 @@ class RubiksCube():
             return False
         return True
 
+    def color(self, face):
+        return self[face].col[face.astype(bool)]
+
     def rotate(self, face, rotation_matrix):
         """
         Rotates the cube's face using the rotation matrix.
@@ -274,17 +241,42 @@ class RubiksCube():
     def Fi(self): self.rotate(F, ROT_Z_POS)
     def Bi(self): self.rotate(B, ROT_Z_NEG)
 
+    def move(self, move: str):
+        """
+        Does a single Rubik's cube move.
+
+        Parameters:
+        -----------
+        move: str
+            Move to do as a string.
+        """
+        move = move.replace("'", "i")
+        move = getattr(self, move, None)
+        if move is not None:
+            move()
+        else:
+            raise Exception(f'Move not found')
+
     def sequence(self, moves: str):
         """
+        Follows a sequence of Rubik's cube moves.
+
         Parameters:
         -----------
         moves: str
             Sequence of moves to follow.
             Example: "R' D' R D"
         """
-        moves = [move.replace("'", "i") for move in moves.split()]
+        moves = moves.split()
         for move in moves:
-            getattr(self, move)()
+            self.move(move)
+
+    def cubie_from_colors(self, *colors):
+        for cubie in self.cubies:
+            c = np.count_nonzero(cubie.col)
+            if c == len(colors):
+                if all(c in cubie.col for c in colors):
+                    return cubie
 
     def _cubies_from_face(self, axis):
         mask = axis.astype(bool)
@@ -318,9 +310,9 @@ class RubiksCube():
                 return cubie
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-        return all(cubie == other[cubie.pos] for cubie in self.cubies)
+        return isinstance(other, self.__class__) \
+            and all(cubie == other[cubie.pos] for cubie in self.cubies)
+
 
 if __name__ == "__main__":
     # def assert_cubies():
@@ -354,55 +346,64 @@ if __name__ == "__main__":
     #     print(f'{cubie_face.typ} pos2: {cubie_face.pos}')
     #     print(f'{cubie_face.typ} col2: {cubie_face.col}')
 
-    # def assert_cube():
-    #     print('------------- SOLVED CUBE -------------')
-    #     cube_solved = RubiksCube(
-    #         cube='''
-    #                R R R
-    #                R R R
-    #                R R R
-    #         B B B  W W W  G G G  Y Y Y
-    #         B B B  W W W  G G G  Y Y Y
-    #         B B B  W W W  G G G  Y Y Y
-    #                O O O
-    #                O O O
-    #                O O O
-    #         '''
-    #     )
-    #     print(cube_solved)
-    #     print(f'Cube solved? {cube_solved.is_solved}')
-    #     print('---------------------------------------')
+    def assert_cube():
+        cube_solved = RubiksCube(
+            cube='''
+                   R R R
+                   R R R
+                   R R R
+            B B B  W W W  G G G  Y Y Y
+            B B B  W W W  G G G  Y Y Y
+            B B B  W W W  G G G  Y Y Y
+                   O O O
+                   O O O
+                   O O O
+            '''
+        )
+        assert cube_solved.is_solved, 'Cube should be solved.'
 
-    #     print()
+        cube_scrambled = RubiksCube(
+            cube='''
+                   G G O
+                   B R W
+                   Y Y Y
+            R B Y  B G R  W Y R  W O B
+            R B O  B W O  G G R  B Y O
+            W R O  G R B  G W Y  W Y O
+                   B W G
+                   G O W
+                   R Y O
+            '''
+        )
+        assert not cube_scrambled.is_solved, 'Cube should not be solved.'
 
-    #     print('----------- SCRAMBLED CUBE -----------')
-    #     cube_scrambled = RubiksCube(
-    #         cube='''
-    #                G G O
-    #                B R W
-    #                Y Y Y
-    #         R B Y  B G R  W Y R  W O B
-    #         R B O  B W O  G G R  B Y O
-    #         W R O  G R B  G W Y  W Y O
-    #                B W G
-    #                G O W
-    #                R Y O
-    #         '''
-    #     )
-    #     print(cube_scrambled)
-    #     print(f'Cube solved? {cube_scrambled.is_solved}')
-    #     print('---------------------------------------')
+        scrambled_copy = RubiksCube(cube=cube_scrambled)
+        immutable_sequences = [
+            "R R'",
+            "L L'",
+            "U U'",
+            "D D'",
+            "F F'",
+            "B B'",
+            "R R R R",
+            "L L L L",
+            "U U U U",
+            "D D D D",
+            "F F F F",
+            "B B B B",
+            "R' R' R' R'",
+            "L' L' L' L'",
+            "U' U' U' U'",
+            "D' D' D' D'",
+            "F' F' F' F'",
+            "B' B' B' B'",
+            "R' D' R D R' D' R D R' D' R D R' D' R D R' D' R D R' D' R D",
+        ]
+        for seq in immutable_sequences:
+            scrambled_copy.sequence(seq)
+            assert scrambled_copy == cube_scrambled, f"{seq} isn't returning to same cube."
 
-    #     print()
-
-    #     print('------- ROTATED SCRAMBLED CUBE -------')
-    #     rot_scrambled = RubiksCube(cube=cube_scrambled)
-    #     rot_scrambled.F()
-    #     print(rot_scrambled)
-    #     print(rot_scrambled[1, 1, 1])
-    #     print(f'Cube solved? {rot_scrambled.is_solved}')
-    #     returned_to_scrambled = RubiksCube(cube=rot_scrambled)
-    #     returned_to_scrambled.Fi()
-    #     print(f'Is equal after return? {returned_to_scrambled == cube_scrambled}')
-    #     print('---------------------------------------')
-    print('MUST CLEAN UP TESTS')
+        cube_list = [cube_solved, cube_scrambled]
+        assert scrambled_copy in cube_list, "Copy of cube not in list with original."
+        print('All cube tests gone correctly')
+    assert_cube()
