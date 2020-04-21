@@ -1,5 +1,5 @@
 """
-Rubik's Cube objects "Cubie" and "Cube".
+Rubik's Cube objects "Cubie" and "RubiksCube".
 
 Based on https://github.com/pglass/cube
 """
@@ -133,13 +133,13 @@ class Cubie():
             return False
         return np.array_equiv(self.pos, other.pos) and np.array_equiv(self.col, other.col)
 
-class Cube():
+class RubiksCube():
     """
     Model of the Rubik's cube, composed of 26 cubies.
 
     Parameters:
     -----------
-    cube: str or Cube
+    cube: str or RubiksCube
         String representation of cube or another Cube to copy.
         format:
                    U U U
@@ -157,7 +157,7 @@ class Cube():
     Attributes:
     -----------
     cubies: tuple of Cubie
-        Every cubie in the Cube.
+        Every cubie in the Rubiks Cube.
 
     Methods:
     --------
@@ -166,7 +166,7 @@ class Cube():
     colors = COLORS
 
     def __init__(self, cube: str):
-        if isinstance(cube, Cube):
+        if isinstance(cube, self.__class__):
             self.cubies = deepcopy(cube).cubies
             return
 
@@ -289,7 +289,7 @@ class Cube():
             f'       {d[6]} {d[7]} {d[8]}'
 
     def __repr__(self):
-        return f'Cube(solved: {self.is_solved})'
+        return f'RubiksCube(solved: {self.is_solved})'
 
     def __getitem__(self, *args):
         for cubie in self.cubies:
@@ -302,85 +302,86 @@ class Cube():
         return all(cubie == other[cubie.pos] for cubie in self.cubies)
 
 if __name__ == "__main__":
-    def check_cubies():
-        cubie_corner = Cubie(
-            pos=[1, 1, 1],
-            col=['Y', 'B', 'R']
-            )
-        print(f'{cubie_corner.typ} pos1: {cubie_corner.pos}')
-        print(f'{cubie_corner.typ} col1: {cubie_corner.col}')
-        cubie_corner.rotate(ROT_Z_POS)
-        print(f'{cubie_corner.typ} pos2: {cubie_corner.pos}')
-        print(f'{cubie_corner.typ} col2: {cubie_corner.col}')
+    # def assert_cubies():
+    #     cubie_corner = Cubie(
+    #         pos=[1, 1, 1],
+    #         col=['Y', 'B', 'R']
+    #         )
+    #     assert cubie_corner.typ == 'corner'
+    #     cubie_corner_2 = deepcopy(cubie_corner)
+    #     cubie_corner_2.rotate(ROT_Z_POS)
+    #     cubie_corner_2.rotate(ROT_Z_NEG)
+    #     assert cubie_corner == cubie_corner_2
 
-        cubie_edge = Cubie(
-            pos=[0, 1, 1],
-            col=[None, 'R', 'B']
-            )
-        print(f'{cubie_edge.typ} pos1: {cubie_edge.pos}')
-        print(f'{cubie_edge.typ} col1: {cubie_edge.col}')
-        cubie_edge.rotate(ROT_Z_POS)
-        print(f'{cubie_edge.typ} pos2: {cubie_edge.pos}')
-        print(f'{cubie_edge.typ} col2: {cubie_edge.col}')
+    #     cubie_edge = Cubie(
+    #         pos=[0, 1, 1],
+    #         col=[None, 'R', 'B']
+    #         )
+    #     print(f'{cubie_edge.typ} pos1: {cubie_edge.pos}')
+    #     print(f'{cubie_edge.typ} col1: {cubie_edge.col}')
+    #     cubie_edge.rotate(ROT_Z_POS)
+    #     print(f'{cubie_edge.typ} pos2: {cubie_edge.pos}')
+    #     print(f'{cubie_edge.typ} col2: {cubie_edge.col}')
 
-        cubie_face = Cubie(
-            pos=[0, 0, 1],
-            col=[None, None, 'B']
-            )
-        print(f'{cubie_face.typ} pos1: {cubie_face.pos}')
-        print(f'{cubie_face.typ} col1: {cubie_face.col}')
-        cubie_face.rotate(ROT_Y_POS)
-        print(f'{cubie_face.typ} pos2: {cubie_face.pos}')
-        print(f'{cubie_face.typ} col2: {cubie_face.col}')
+    #     cubie_face = Cubie(
+    #         pos=[0, 0, 1],
+    #         col=[None, None, 'B']
+    #         )
+    #     print(f'{cubie_face.typ} pos1: {cubie_face.pos}')
+    #     print(f'{cubie_face.typ} col1: {cubie_face.col}')
+    #     cubie_face.rotate(ROT_Y_POS)
+    #     print(f'{cubie_face.typ} pos2: {cubie_face.pos}')
+    #     print(f'{cubie_face.typ} col2: {cubie_face.col}')
 
-    def check_cube():
-        print('------------- SOLVED CUBE -------------')
-        cube_solved = Cube(
-            cube='''
-                   R R R
-                   R R R
-                   R R R
-            B B B  W W W  G G G  Y Y Y
-            B B B  W W W  G G G  Y Y Y
-            B B B  W W W  G G G  Y Y Y
-                   O O O
-                   O O O
-                   O O O
-            '''
-        )
-        print(cube_solved)
-        print(f'Cube solved? {cube_solved.is_solved}')
-        print('---------------------------------------')
+    # def assert_cube():
+    #     print('------------- SOLVED CUBE -------------')
+    #     cube_solved = RubiksCube(
+    #         cube='''
+    #                R R R
+    #                R R R
+    #                R R R
+    #         B B B  W W W  G G G  Y Y Y
+    #         B B B  W W W  G G G  Y Y Y
+    #         B B B  W W W  G G G  Y Y Y
+    #                O O O
+    #                O O O
+    #                O O O
+    #         '''
+    #     )
+    #     print(cube_solved)
+    #     print(f'Cube solved? {cube_solved.is_solved}')
+    #     print('---------------------------------------')
 
-        print()
+    #     print()
 
-        print('----------- SCRAMBLED CUBE -----------')
-        cube_scrambled = Cube(
-            cube='''
-                   G G O
-                   B R W
-                   Y Y Y
-            R B Y  B G R  W Y R  W O B
-            R B O  B W O  G G R  B Y O
-            W R O  G R B  G W Y  W Y O
-                   B W G
-                   G O W
-                   R Y O
-            '''
-        )
-        print(cube_scrambled)
-        print(f'Cube solved? {cube_scrambled.is_solved}')
-        print('---------------------------------------')
+    #     print('----------- SCRAMBLED CUBE -----------')
+    #     cube_scrambled = RubiksCube(
+    #         cube='''
+    #                G G O
+    #                B R W
+    #                Y Y Y
+    #         R B Y  B G R  W Y R  W O B
+    #         R B O  B W O  G G R  B Y O
+    #         W R O  G R B  G W Y  W Y O
+    #                B W G
+    #                G O W
+    #                R Y O
+    #         '''
+    #     )
+    #     print(cube_scrambled)
+    #     print(f'Cube solved? {cube_scrambled.is_solved}')
+    #     print('---------------------------------------')
 
-        print()
+    #     print()
 
-        print('------- ROTATED SCRAMBLED CUBE -------')
-        rot_scrambled = Cube(cube=cube_scrambled)
-        rot_scrambled.F()
-        print(rot_scrambled)
-        print(rot_scrambled[1, 1, 1])
-        print(f'Cube solved? {rot_scrambled.is_solved}')
-        returned_to_scrambled = Cube(cube=rot_scrambled)
-        returned_to_scrambled.Fi()
-        print(f'Is equal after return? {returned_to_scrambled == cube_scrambled}')
-        print('---------------------------------------')
+    #     print('------- ROTATED SCRAMBLED CUBE -------')
+    #     rot_scrambled = RubiksCube(cube=cube_scrambled)
+    #     rot_scrambled.F()
+    #     print(rot_scrambled)
+    #     print(rot_scrambled[1, 1, 1])
+    #     print(f'Cube solved? {rot_scrambled.is_solved}')
+    #     returned_to_scrambled = RubiksCube(cube=rot_scrambled)
+    #     returned_to_scrambled.Fi()
+    #     print(f'Is equal after return? {returned_to_scrambled == cube_scrambled}')
+    #     print('---------------------------------------')
+    print('MUST CLEAN UP TESTS')
