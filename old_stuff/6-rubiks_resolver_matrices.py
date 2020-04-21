@@ -145,8 +145,8 @@ class Cubo:
 
     @property
     def resuelto(self):
-        # Si la heurística es 0, ya llegamos a la solución.
-        return (self.h == 0)
+        # Si por cada cara todas los cuadros son iguales, está resuelto.
+        return all((m == m[0,0]).all() for m in self.caras.values())
 
     @property
     def f(self):
@@ -162,7 +162,7 @@ class Cubo:
     def _fuera_de_lugar(self):
         '''
         Cuenta la cantidad de cuadros fuera de su cara.
-        
+
         Si es 0, el cubo rubik está resuelto.
         '''
         faltantes = 0
@@ -296,9 +296,6 @@ def tests():
 
 if __name__ == '__main__':
     tests()
-
-    # sys.setrecursionlimit(5000)
-
     # inicial = {
             # 'F' : np.array([
             #     [6, 2, 1],
@@ -395,7 +392,5 @@ if __name__ == '__main__':
             [4, 5, 1]
             ],dtype=np.uint8),
         }
-
     cubo = Cubo(caras=inicial, heuristica='_fuera_de_lugar')
     print(A_star(cubo))
-
