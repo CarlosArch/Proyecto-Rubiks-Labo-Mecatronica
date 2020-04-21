@@ -1,1 +1,0 @@
-https://docs.opencv.org/4.2.0/index.html
