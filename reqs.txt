@@ -5,3 +5,4 @@ opencv-contrib-python==4.2.0.32
 opencv-python==4.2.0.32
 pandas==1.0.1
 scipy==1.4.1
+rubik-solver==0.2.0
