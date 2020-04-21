@@ -161,7 +161,14 @@ class RubiksCube():
 
     Methods:
     --------
-    None
+    rotate(face, rotation_matrix)
+        Rotates the cube's face using the rotation matrix.
+
+    R(), L(), U(), D(), F(), B(), Ri(), Li(), Ui(), Di(), Fi() & Bi()
+        Shorthand rotations based on usual notation.
+
+    sequence(moves)
+        Follows a sequence of moves.
     """
     colors = COLORS
 
@@ -221,26 +228,36 @@ class RubiksCube():
     @property
     def is_solved(self):
         all_same = lambda obj: len(set(obj)) == 1
-        if not all_same([cubie.col[0] for cubie in self.get_face(R)]):
+        if not all_same([cubie.col[0] for cubie in self._cubies_from_face(R)]):
             return False
-        if not all_same([cubie.col[0] for cubie in self.get_face(L)]):
+        if not all_same([cubie.col[0] for cubie in self._cubies_from_face(L)]):
             return False
-        if not all_same([cubie.col[1] for cubie in self.get_face(U)]):
+        if not all_same([cubie.col[1] for cubie in self._cubies_from_face(U)]):
             return False
-        if not all_same([cubie.col[1] for cubie in self.get_face(D)]):
+        if not all_same([cubie.col[1] for cubie in self._cubies_from_face(D)]):
             return False
-        if not all_same([cubie.col[2] for cubie in self.get_face(F)]):
+        if not all_same([cubie.col[2] for cubie in self._cubies_from_face(F)]):
             return False
-        if not all_same([cubie.col[2] for cubie in self.get_face(B)]):
+        if not all_same([cubie.col[2] for cubie in self._cubies_from_face(B)]):
             return False
         return True
 
-    def get_face(self, axis):
-        mask = axis.astype(bool)
-        return [c for c in self.cubies if np.all(c.pos[mask] == axis[mask])]
-
     def rotate(self, face, rotation_matrix):
-        for cubie in self.get_face(face):
+        """
+        Rotates the cube's face using the rotation matrix.
+
+        Parameters:
+        -----------
+        face: array-like
+            Face axis to rotate.
+
+        rotation_matrix: array-like
+            3D rotation matrix.
+
+        https://en.wikipedia.org/wiki/Rotation_matrix
+
+        """
+        for cubie in self._cubies_from_face(face):
             cubie.rotate(rotation_matrix)
 
     def R(self): self.rotate(R, ROT_X_NEG)
@@ -269,13 +286,17 @@ class RubiksCube():
         for move in moves:
             getattr(self, move)()
 
+    def _cubies_from_face(self, axis):
+        mask = axis.astype(bool)
+        return [c for c in self.cubies if np.all(c.pos[mask] == axis[mask])]
+
     def __str__(self):
-        r = [c.col[0] for c in sorted(self.get_face(R), key=lambda c: (-c.pos[1], -c.pos[2]))]
-        l = [c.col[0] for c in sorted(self.get_face(L), key=lambda c: (-c.pos[1], c.pos[2]))]
-        u = [c.col[1] for c in sorted(self.get_face(U), key=lambda c: (c.pos[2], c.pos[0]))]
-        d = [c.col[1] for c in sorted(self.get_face(D), key=lambda c: (-c.pos[2], c.pos[0]))]
-        f = [c.col[2] for c in sorted(self.get_face(F), key=lambda c: (-c.pos[1], c.pos[0]))]
-        b = [c.col[2] for c in sorted(self.get_face(B), key=lambda c: (-c.pos[1], -c.pos[0]))]
+        r = [c.col[0] for c in sorted(self._cubies_from_face(R), key=lambda c: (-c.pos[1], -c.pos[2]))]
+        l = [c.col[0] for c in sorted(self._cubies_from_face(L), key=lambda c: (-c.pos[1], c.pos[2]))]
+        u = [c.col[1] for c in sorted(self._cubies_from_face(U), key=lambda c: (c.pos[2], c.pos[0]))]
+        d = [c.col[1] for c in sorted(self._cubies_from_face(D), key=lambda c: (-c.pos[2], c.pos[0]))]
+        f = [c.col[2] for c in sorted(self._cubies_from_face(F), key=lambda c: (-c.pos[1], c.pos[0]))]
+        b = [c.col[2] for c in sorted(self._cubies_from_face(B), key=lambda c: (-c.pos[1], -c.pos[0]))]
 
         return \
             f'       {u[0]} {u[1]} {u[2]}\n'\
