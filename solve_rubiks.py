@@ -1,9 +1,12 @@
+import sys
+
 from core import vision
 from rubik_solver import utils
 
 # folder = 'imgs/B&W'
 # folder = 'imgs/FullColor'
-folder = 'imgs/Mi_cubo'
+# folder = 'imgs/Mi_cubo'
+folder = f'imgs/{sys.argv[1]}'
 paths = {
     'Y' : f'{folder}/rubik_amarillo.jpg',
     'W' : f'{folder}/rubik_blanco.jpg',
@@ -12,11 +15,15 @@ paths = {
     'B' : f'{folder}/rubik_azul.jpg',
     'G' : f'{folder}/rubik_verde.jpg',
 }
-cube = vision.RubiksCube(paths)
 print(" ------------ ESCANEANDO CUBO... ------------ ")
+cube = vision.RubiksCube(paths)
 print(cube)
 print(" ------------ RESOLVIENDO CUBO... ----------- ")
-print(utils.solve(cube.to_solve_string(), 'Kociemba'))
+solution_list = utils.solve(cube.to_solve_string(), 'Kociemba')
+solution_list = [str(move) for move in solution_list]
+solution_string = " ".join(solution_list)
+print(f'SOLUCIÓN: {solution_string}')
+print(f'{len(solution_list)}')
 
 #        O B B
 #        O Y B
